@@ -41,6 +41,14 @@ Scripts are added to package.json scripts.
 An array of files to copy from `~/.script-script` to the current directory. The files can be a string, or a pair of `[source file, dest file]`. If the path conflicts with an existing file, you will be prompted if you want to overwrite it.
 
 
+## cli use
+
+    $ script-script [recipe name]
+
+### example
+
+    $ script-script travis
+
 
 
 
