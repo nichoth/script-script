@@ -1,0 +1,35 @@
+{
+  "name": "script-script",
+  "version": "0.0.0",
+  "description": "Politely install config files and package scripts",
+  "main": "index.js",
+  "bin": {
+    "script-script": "index.js"
+  },
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "dependencies": {
+    "cpy": "^6.0.0",
+    "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
+    "os-homedir": "^1.0.2",
+    "run-series": "^1.1.4",
+    "yn": "^2.0.0"
+  },
+  "devDependencies": {},
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nichoth/script-script.git"
+  },
+  "author": "nichoth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nichoth/script-script/issues"
+  },
+  "homepage": "https://github.com/nichoth/script-script#readme"
+}

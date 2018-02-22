@@ -1,0 +1,14 @@
+{
+    "travis": {
+        "files": [ ["travis.yml", ".travis.yml"] ]
+    },
+
+    "husky": {
+        "devinstall": ["husky"],
+        "scripts": {
+            "prepush": "./test/githook/prepush.sh"
+        },
+        "files": [ ["prepush.sh", "./test/githook/prepush.sh"] ]
+    }
+}
+
