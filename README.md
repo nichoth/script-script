@@ -28,15 +28,17 @@ Write recipes in `~/.script-script/index.json`.
 
 Each key is a recipe name, and sub-keys point to actions to perform.
 
-### devinstall
+### actions
+
+#### devinstall
 
 A list of package names that should be installed and added to `devDependencies`.
 
-### scripts
+#### scripts
 
 Scripts are added to package.json scripts. 
 
-### files
+#### files
 
 An array of files to copy from `~/.script-script` to the current directory. The files can be a string, or a pair of `[source file, dest file]`. If the path conflicts with an existing file, you will be prompted if you want to overwrite it.
 
