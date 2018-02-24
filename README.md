@@ -22,6 +22,17 @@ Write recipes in `~/.script-script/index.json`.
             "prepush": "./test/githook/prepush.sh"
         },
         "files": [ ["prepush.sh", "./test/githook/prepush.sh"] ]
+    },
+
+    "lint": {
+        "devinstall": ["eslint", "eslint-config-minlint"],
+        "scripts": {
+            "lint": "eslint ."
+        },
+        "files": [
+            ["eslintrc", ".eslintrc"],
+            ["eslintignore", ".eslintignore"]
+        ]
     }
 }
 ```
@@ -50,7 +61,5 @@ An array of files to copy from `~/.script-script` to the current directory. The 
 ### example
 
     $ script-script travis
-
-
 
 

@@ -29,6 +29,10 @@ function ScriptScript (keys) {
         console.log('recipe', recipe)
     }
 
+    doRecipe(recipe, k)
+}
+
+function doRecipe (recipe, k) {
     series((recipe.files || []).map(function (file) {
         return function _file (cb) {
             copyFile(file, cb)
@@ -66,6 +70,7 @@ function ScriptScript (keys) {
                 (scriptsSum === 1 ? '' : 's'))
     })
 }
+
 
 function copyFile (file, cb) {
     var source = path.join(DIR, Array.isArray(file) ?
