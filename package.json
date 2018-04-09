@@ -8,6 +8,8 @@
   },
   "scripts": {
     "postinstall": "node postinstall.js",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags",
     "test": "mkdir -p test/dest && rm -rf test/dest/* && node test/index.js"
   },
   "dependencies": {
