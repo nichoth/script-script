@@ -4,10 +4,13 @@
   "description": "Politely install config files and package scripts",
   "main": "index.js",
   "bin": {
-    "script-script": "index.js"
+    "script-script": "bin/index.js"
   },
   "scripts": {
-    "postinstall": "node postinstall.js"
+    "postinstall": "node postinstall.js",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags",
+    "test": "mkdir -p test/dest && rm -rf test/dest/* && node test/index.js"
   },
   "dependencies": {
     "cpy": "^6.0.0",

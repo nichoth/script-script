@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 var fs = require('fs')
 var spawn = require('child_process').spawn
 var path = require('path')
@@ -6,43 +5,21 @@ var readline = require('readline')
 var mkdirp = require('mkdirp')
 var yn = require('yn')
 var series = require('run-series')
-var minimist = require('minimist')
-var home = require('os-homedir')
-var DIR = process.env.NODE_ENV === 'development' ?
-    __dirname + '/example' :
-    path.join(home(), '.script-script')
 
-var argv = minimist(process.argv.slice(2))
-ScriptScript(argv._)
+module.exports = function doRecipe ({ source, dest, recipe, key }, cb) {
+    dest = dest || '.'
+    cb = cb || function noop () {}
 
-var use = `
-    Usage:
-        script-script [recipe name]
-`
-
-function ScriptScript (keys) {
-    var json = JSON.parse(fs.readFileSync(path.join(DIR, 'index.json')))
-    var k = keys[0]
-    if (!k) return console.log(use)
-    var recipe = json[k]
-    if (process.env.NODE_ENV === 'development') {
-        console.log('recipe', recipe)
-    }
-
-    doRecipe(recipe, k)
-}
-
-function doRecipe (recipe, k) {
     series((recipe.files || []).map(function (file) {
         return function _file (cb) {
-            copyFile(file, cb)
+            copyFile(source, dest, file, cb)
         }
     }).concat([
         function _scripts (cb) {
             if (!recipe.scripts) return process.nextTick(function () {
                 cb(null)
             })
-            pkgScripts(recipe, k, cb)
+            pkgScripts(recipe, dest, key, cb)
         },
 
         function _install (cb) {
@@ -57,33 +34,33 @@ function doRecipe (recipe, k) {
             })
         }
     ]), function allDone (err, res) {
-        if (err) return
+        if (err) return cb(err)
+
         var filesN = (recipe.files || []).length
         var filesSum = res.slice(0, filesN)
             .filter(Boolean)
             .reduce((sum, n) => sum + n, 0)
 
-        console.log('Copied ' + filesSum + ' file' +
-                (filesSum === 1 ? '' : 's'))
         var scriptsSum = Object.keys(recipe.scripts || {}).length
-        console.log('Added ' + scriptsSum + ' package script' +
-                (scriptsSum === 1 ? '' : 's'))
+
+        cb(null, {
+            filesCopied: filesSum,
+            scriptsInstalled: scriptsSum
+        })
     })
 }
 
-
-function copyFile (file, cb) {
-    var source = path.join(DIR, Array.isArray(file) ?
+function copyFile (source, dest, file, cb) {
+    var source = path.join(source, Array.isArray(file) ?
         file[0] :
         file)
-    var dest = Array.isArray(file) ? file[1] : file
+    var dest = path.join(dest, Array.isArray(file) ? file[1] : file)
 
     fs.access(dest, fs.constants.F_OK, function (err) {
         if (err) {  // file does not exist, so write it
             var dir = path.parse(dest).dir
             return mkdirp(dir, function (err) {
-                if (err) return console.log('Error mkdirp ' + dir,
-                        err)
+                if (err) return console.log('Error mkdirp ' + dir, err)
                 fs.createReadStream(source)
                     .pipe(fs.createWriteStream(dest))
                     .once('finish', cb.bind(null, null, 1))
@@ -119,10 +96,12 @@ function copyFile (file, cb) {
 }
 
 // return number of scripts installed
-function pkgScripts (recipe, recipeName, cb) {
+function pkgScripts (recipe, dest, recipeName, cb) {
+    var dest = dest || '.'
     var pkgData, pkg
+
     try {
-        pkgData = fs.readFileSync('./package.json')
+        pkgData = fs.readFileSync(path.join(dest, 'package.json'))
     } catch (err) {
         pkg = {}
     }
@@ -143,7 +122,7 @@ function pkgScripts (recipe, recipeName, cb) {
     })
 
     var data = JSON.stringify(pkg, null, 2)
-    fs.writeFile('./package.json', data, function (err) {
+    fs.writeFile(path.join(dest, './package.json'), data, function (err) {
         if (err) console.log('Error writing package.json', err)
         cb(null, Object.keys(recipe.scripts).length)
     })
@@ -155,6 +134,4 @@ function createRl () {
         output: process.stdout
     })
 }
-
-module.exports = ScriptScript
 

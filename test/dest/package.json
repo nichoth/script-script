@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "prepush": "./test/githook/prepush.sh"
+  }
+}
