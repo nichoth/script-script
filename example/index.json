@@ -9,6 +9,25 @@
             "prepush": "./test/githook/prepush.sh"
         },
         "files": [ ["prepush.sh", "./test/githook/prepush.sh"] ]
+    },
+
+    "demo": {
+        "package.json": {
+            "browser": {
+              "request": "xhr"
+            },
+            "aliasify": {
+              "aliases": {
+                "react": "preact-compat",
+                "react-dom": "preact-compat",
+                "create-react-class": "preact-compat/lib/create-react-class"
+              }
+            },
+            "engines": {
+              "npm": "^5.0.0",
+              "node": "^8.0.0"
+            }
+        }
     }
 }
 

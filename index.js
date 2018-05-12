@@ -9,6 +9,7 @@ var series = require('run-series')
 module.exports = function doRecipe ({ source, dest, recipe, key }, cb) {
     dest = dest || '.'
     cb = cb || function noop () {}
+    var scriptsRes
 
     series((recipe.files || []).map(function (file) {
         return function _file (cb) {
@@ -16,10 +17,16 @@ module.exports = function doRecipe ({ source, dest, recipe, key }, cb) {
         }
     }).concat([
         function _scripts (cb) {
-            if (!recipe.scripts) return process.nextTick(function () {
-                cb(null)
+            // if (!recipe.scripts) return process.nextTick(function () {
+            //     cb(null, {
+            //         fields: 0,
+            //         scripts:
+            //     })
+            // })
+            pkgScripts(recipe, dest, key, function (err, res) {
+                if (err) return cb(err)
+                scriptsRes = res
             })
-            pkgScripts(recipe, dest, key, cb)
         },
 
         function _install (cb) {
@@ -41,11 +48,10 @@ module.exports = function doRecipe ({ source, dest, recipe, key }, cb) {
             .filter(Boolean)
             .reduce((sum, n) => sum + n, 0)
 
-        var scriptsSum = Object.keys(recipe.scripts || {}).length
-
         cb(null, {
             filesCopied: filesSum,
-            scriptsInstalled: scriptsSum
+            packageFields: scriptsRes.fields,
+            scriptsInstalled: scriptsRes.scripts
         })
     })
 }
@@ -98,33 +104,44 @@ function copyFile (source, dest, file, cb) {
 // return number of scripts installed
 function pkgScripts (recipe, dest, recipeName, cb) {
     var dest = dest || '.'
-    var pkgData, pkg
+    var pkg
 
     try {
-        pkgData = fs.readFileSync(path.join(dest, 'package.json'))
-    } catch (err) {
-        pkg = {}
-    }
-    if (!pkg) try {
-        pkg = JSON.parse(pkgData)
+        pkg = getPackageJson(dest)
     } catch(err) {
         cb(err)
         return console.log('Invalid package.json', err)
     }
-    if (!pkg.scripts) pkg.scripts = {}
 
-    Object.keys(recipe.scripts).forEach(function (k) {
-        if (!pkg.scripts[k]) {
-            pkg.scripts[k] = recipe.scripts[k]
-            return
-        }
-        pkg.scripts[k + '__' + recipeName] = recipe.scripts[k]
+    // keys under 'package.json' in the recipe
+    Object.keys(recipe['package.json'] || {}).forEach(function (k) {
+        if (!pkg[k]) pkg[k] = {}
+        safeWriteJson(pkg[k], recipe['package.json'][k], recipeName)
     })
+
+    // 'scripts' key, should be phased out
+    if (!pkg.scripts) pkg.scripts = {}
+    if (Object.keys(recipe.scripts || {}).length) {
+        safeWriteJson(pkg.scripts, recipe.scripts, recipeName)
+    }
 
     var data = JSON.stringify(pkg, null, 2)
     fs.writeFile(path.join(dest, './package.json'), data, function (err) {
         if (err) console.log('Error writing package.json', err)
-        cb(null, Object.keys(recipe.scripts).length)
+
+        var fieldsN = Object.keys(recipe['package.json'] || {}).length
+        if ((recipe['package.json'] || {}).scripts) fieldsN--
+
+        var scriptsN = Object.keys((recipe['package.json'] || {}).scripts ||
+            {}).length
+        if ((recipe['package.json'] || {}).scripts) {
+            scriptsN += Object.keys(recipe['package.json'].scripts).length
+        }
+
+        cb(null, {
+            fields: fieldsN,
+            scripts: scriptsN
+        })
     })
 }
 
@@ -133,5 +150,29 @@ function createRl () {
         input: process.stdin,
         output: process.stdout
     })
+}
+
+function safeWriteJson (obj, next, prefix) {
+    Object.keys(next).forEach(function (k) {
+        if (!obj[k]) {
+            obj[k] = next[k]
+            return
+        }
+        obj[k + '__' + prefix] = next[k]
+    })
+}
+
+function getPackageJson (dest) {
+    var dest = dest || '.'
+    var pkgData, pkg
+
+    try {
+        pkgData = fs.readFileSync(path.join(dest, 'package.json'))
+    } catch(err) {
+        pkg = {}
+    }
+
+    if (!pkg) pkg = JSON.parse(pkgData)
+    return pkg
 }
 

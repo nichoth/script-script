@@ -6,6 +6,10 @@
   "bin": {
     "script-script": "bin/index.js"
   },
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
   "scripts": {
     "postinstall": "node postinstall.js",
     "preversion": "npm test",
@@ -21,10 +25,6 @@
     "yn": "^2.0.0"
   },
   "devDependencies": {},
-  "directories": {
-    "example": "example",
-    "test": "test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nichoth/script-script.git"

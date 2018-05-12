@@ -1,5 +1,4 @@
 # script script
-
 A script for your scripts. Politely install config files and package scripts by reading from templates in your home directory, and never overwriting files without asking. Sometimes you want one command that will install dependencies, add config files, and add scripts to package.json.
 
 ## install
@@ -7,7 +6,6 @@ A script for your scripts. Politely install config files and package scripts by 
     $ npm install -g script-script
 
 ## recipes
-
 Write recipes in `~/.script-script/index.json`. 
 
 ```js
@@ -33,6 +31,25 @@ Write recipes in `~/.script-script/index.json`.
             ["eslintrc", ".eslintrc"],
             ["eslintignore", ".eslintignore"]
         ]
+    },
+
+    "demo": {
+        "package.json": {
+            "browser": {
+              "request": "xhr"
+            },
+            "aliasify": {
+              "aliases": {
+                "react": "preact-compat",
+                "react-dom": "preact-compat",
+                "create-react-class": "preact-compat/lib/create-react-class"
+              }
+            },
+            "engines": {
+              "npm": "^5.0.0",
+              "node": "^8.0.0"
+            }
+        }
     }
 }
 ```
